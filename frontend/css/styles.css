@@ -1,3 +1,4 @@
+
 *{
     box-sizing: border-box;
 }
@@ -8,6 +9,7 @@ body {
     align-items: center;
     height: 100vh;
     margin: 0;
+    font-family: monospace; /* Added consistent font family */
 }
 
 .typing-area-container{
@@ -16,32 +18,43 @@ body {
     background-color: #f0f0f0;
     width: 800px;
     max-width: 90%;
+}
 
+/* Shared styling for both text elements */
+.text-to-type,
+.user-input {
+    font-family: monospace;
+    font-size: 1.2rem;
+    line-height: 1.5;
+    padding: .5rem 1rem;
+    border-radius: .5rem;
+    width: 100%;
+    margin-bottom: 1rem;
 }
 
 .text-to-type{
-    margin-bottom: 1rem;
-    margin-left: calc(1rem + 2px);
-    margin-right: calc(1rem + 2px);
-    font-size: 1.25rem;
+    background-color: #fafafa;
+    border: 2px solid #ddd;
+    min-height: 8rem;
+    display: block;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: normal;
+    padding: .5rem;
 }
 
 .user-input{
     background-color: transparent;
     outline: none;
     border: 2px solid gray;
-    border-radius: .5rem;
-    width: 100%;
-    height: 8rem;
+    height: 16rem;
     resize: none;
-    padding: .5rem 1rem;
-    font-size: 1.25rem;
+    margin-bottom: 0;
 }
 
 .user-input:focus{
     border-color: black;
 }
-
 
 .timer{
     position: absolute;
@@ -50,3 +63,11 @@ body {
     font-weight: bold;
 }
 
+.correct{
+    color: green;
+}
+
+.incorrect{
+    color: red;
+    text-decoration: underline;
+}

@@ -51,10 +51,10 @@ function generateUniquePrompt(topic) {
     const randomSeed = Math.floor(Math.random() * 10000);
     const timestamp = Date.now();
     
-    return `Write a creative 3-sentence paragraph about ${topic}. 
+    return `Write a short, creative 2-sentence paragraph about ${topic}. 
     Make it completely unique and different from typical information. 
     Include specific details, numbers, or examples. 
-    Be creative and unexpected.
+    Be creative and unexpected. Try not to exceed 10 words per sentence.
     Random seed: ${randomSeed}, Time: ${timestamp}`;
 }
 
@@ -78,7 +78,7 @@ async function generatRandomParagraph(topic) {
     const response = await ai.models.generateContent({
         model: "gemini-2.0-flash",
         temperature: 1.0,  
-        maxOutputTokens: 30,  
+        maxOutputTokens: 10,  
         topP: 0.95,  
         contents: uniquePrompt,
     });

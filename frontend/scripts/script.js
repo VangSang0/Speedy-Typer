@@ -1,18 +1,22 @@
 const quoteDisplayElement = document.getElementById('text-to-type');
 const quoteInputElement = document.getElementById('user-input');
 const timer = document.getElementById('timer');
-let correct = 0;
-let incorrect = 0;
+const wpm = document.getElementById('wpm-value');
+
 let timerInterval = null;
 let timerStarted = false;
 let gameActive = false;
+let wpmInterval = null;
+let startTime = null;
 
 
 quoteInputElement.addEventListener('input', () => {
     if (!timerStarted && quoteInputElement.value.length > 0) {
-        startTimer(30);
+        startTimer();
+        startWPMCounter();
         timerStarted = true;
         gameActive = true;
+        startTime = Date.now();
     }
     const arrayQuote = quoteDisplayElement.querySelectorAll('span');
     const arrayValue = quoteInputElement.value.split('');
@@ -28,12 +32,14 @@ quoteInputElement.addEventListener('input', () => {
             characterSpan.classList.add('incorrect')
         }
     });
-    if (arrayValue.length >= arrayQuote.length) {
+    if (arrayValue.length + 1 >= arrayQuote.length) {
         endGame();
     }
 });
 
-function getRandomQuote() {
+
+// Api Calling Gemini
+async function getRandomQuote() {
     return fetch('http://localhost:3000/random-paragraph') 
         .then((response) => response.json())
         .then((data) => data.paragraph)  
@@ -53,18 +59,43 @@ async function renderNewQuote() {
     }
 }
 
-function startTimer(seconds) {
-    let counter = seconds;
+function startTimer() {
+    let counter = 0;
     timer.innerText = counter;
     
     timerInterval = setInterval(() => {
-        counter--;
+        counter++;
         timer.innerText = counter;
-        
-        if (counter <= 0) {
-            endGame();
-        }
     }, 1000);
+}
+
+function calculateWPM() {
+    if (!startTime || !gameActive) return 0;
+    
+    const currentTime = Date.now();
+    const timeElapsed = (currentTime - startTime) / 1000 / 60; 
+    
+    const originalWords = quoteDisplayElement.innerText.trim().split(/\s+/);
+    const typedWords = quoteInputElement.value.trim().split(/\s+/);
+    
+    let correctWords = 0;
+    for (let i = 0; i < typedWords.length && i < originalWords.length; i++) {
+        if (typedWords[i] === originalWords[i]) {
+            correctWords++;
+        }
+    }
+
+    const wpm = timeElapsed > 0 ? Math.round(correctWords / timeElapsed) : 0;
+    return wpm;
+}
+
+function startWPMCounter() {
+    wpmInterval = setInterval(() => {
+        if (gameActive) {
+            const currentWPM = calculateWPM();
+            wpm.innerText = currentWPM;
+        }
+    }, 500);
 }
 
 function endGame(){
@@ -72,6 +103,46 @@ function endGame(){
         clearInterval(timerInterval);
         timerInterval = null;
     }
+    if (wpmInterval) {
+        clearInterval(wpmInterval);
+        wpmInterval = null;
+    }
+    gameActive = false;
+    showResults();
+    quoteInputElement.readOnly = true;
 }
+
+
+function calculateAccuracy() {
+    const correctCount = document.querySelectorAll('.correct').length;
+    const incorrectCount = document.querySelectorAll('.incorrect').length;
+    const total = correctCount + incorrectCount;
+    if (total === 0) return 0;
+    return Math.round((correctCount / total) * 100);
+}
+
+async function showResults() {
+    const correctCount = document.querySelectorAll('.correct').length;
+    const incorrectCount = document.querySelectorAll('.incorrect').length;
+    const accuracy = calculateAccuracy();
+    
+    alert(`Game Over! \nWPM: ${wpm.innerText} \nCorrect: ${correctCount} \nIncorrect: ${incorrectCount} \nAccuracy: ${accuracy}%`);
+
+    resetGame();
+    await renderNewQuote();
+    quoteInputElement.readOnly = false; 
+}
+
+
+function resetGame() {
+    clearInterval(timerInterval);
+    timer.innerText = '0';
+    wpm.innerText = '0';
+    quoteInputElement.value = '';
+    timerStarted = false;
+    gameActive = false;
+}
+
+
 
 renderNewQuote();
